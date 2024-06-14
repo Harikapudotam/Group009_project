@@ -1,0 +1,64 @@
+*&---------------------------------------------------------------------*
+*& Report ZG09_ADOBE
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zg09_adobe.
+PARAMETERS p_empno TYPE zg09_perner.
+IMPORT p_empno FROM MEMORY ID 'ABAP28'.
+DATA: wa_outputparams TYPE sfpoutputparams,
+      wa_docparams    TYPE sfpdocparams,
+      gv_fm_name      TYPE rs38l_fnam. "" STADARD FUNCTION STRUCTURE
+
+DATA lt_tab1 TYPE zadobe_tabstrct_tt. "" INTERNAL TABLE FOR MAIN DATA
+
+
+
+
+DATA :wa_tab TYPE ztr_hr_data_strct. ""WORK AREA
+
+START-OF-SELECTION.
+
+  wa_outputparams-device = 'PRINTER'.
+  wa_outputparams-dest = 'LP01'.
+  wa_outputparams-nodialog = 'X'.
+  wa_outputparams-preview = 'X'.
+
+  CALL FUNCTION 'FP_JOB_OPEN'
+    CHANGING
+      ie_outputparams = wa_outputparams.
+  CALL FUNCTION 'FP_FUNCTION_MODULE_NAME'
+    EXPORTING
+      i_name     = 'ZG09_ADOBE_FORM_'
+    IMPORTING
+      e_funcname = gv_fm_name.
+
+  wa_docparams-langu = 'E'.
+  wa_docparams-country = 'IN'.
+
+  SELECT SINGLE reporting_mang INTO @DATA(rep_emp) FROM ztr_hr_data WHERE reporting_emp = @p_empno.
+
+  SELECT ztr_e0000~perner"REPORTING_EMP " ZTR_E0000~PERNER ,  "" ZTR_E000 TABLE DATA
+    ztr_org_tree~name_first  "" ZTR_TR_TREE TABLE DATA
+    ztr_org_tree~name_last  "" ZTR_TR_TREE TABLE DATA
+    ztr_e0000~shift_type
+    ztr_e0000~shift_start_time
+    ztr_e0000~begda
+    ztr_e0000~endda
+    ztr_e0000~shift_END_TIME
+    ztr_e0000~avail_type
+    INTO TABLE lt_tab1
+    FROM ztr_e0000
+   INNER JOIN ztr_org_tree ON ztr_e0000~perner EQ ztr_org_tree~perner
+  INNER JOIN ztr_hr_data ON ztr_org_tree~perner EQ ztr_hr_data~reporting_emp WHERE
+  reporting_mang EQ rep_emp.
+  SELECT  SINGLE reporting_mang reporting_m_nm INTO wa_tab FROM
+     ztr_hr_data WHERE reporting_mang = rep_emp.
+  CALL FUNCTION gv_fm_name "'/1BCDWB/SM00001085'
+    EXPORTING
+      wa_tab  = wa_tab
+      gt_data = lt_tab1.
+
+
+
+  CALL FUNCTION 'FP_JOB_CLOSE'.

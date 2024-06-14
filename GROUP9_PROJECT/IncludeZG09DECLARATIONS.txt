@@ -1,0 +1,40 @@
+*&---------------------------------------------------------------------*
+*& Include          ZG09DECLARATIONS
+*&---------------------------------------------------------------------*
+TYPE-POOLS: vrm.
+DATA : l_val(30),
+       gt_list     TYPE vrm_values,
+       gwa_list    TYPE vrm_value,
+       gt_values   TYPE TABLE OF dynpread,
+
+
+       gwa_values  TYPE dynpread,
+       wa_values   TYPE dynpread,
+
+       gt_list1    TYPE vrm_values,
+       gwa_list1   TYPE vrm_value,
+       gt_values1  TYPE TABLE OF dynpread,
+
+
+       gwa_values1 TYPE dynpread  . "      wa_values1  TYPE dynpread.
+
+TYPES : BEGIN OF ty_tab1 , "this is for reading employee timesheet excel
+          id           TYPE i,
+          start(20)," TYPE TIME,
+          endtimee(20)," TYPE TIME,
+
+          email(50),
+          name(50),
+          last(50)," TYPE TIME,
+
+          empid        TYPE zg09_empid,
+          empdept      TYPE zg09_dept,
+          start_time   TYPE zg09_tim, " TYPE DATUM,
+          end_time     TYPE zg09_tim, "TYPE DATUM,
+          reg_hrs      TYPE zg09_hrs,
+          over_hrs     TYPE zg09_hrs,
+          total_hrs    TYPE zg09_hrs,
+        END OF ty_tab1
+
+        .
+DATA : it_tab TYPE TABLE OF ty_tab1 .

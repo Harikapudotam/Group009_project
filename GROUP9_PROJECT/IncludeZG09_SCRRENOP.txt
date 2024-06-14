@@ -1,0 +1,78 @@
+*&---------------------------------------------------------------------*
+*& Include          ZG09_SCRRENOP
+*&---------------------------------------------------------------------*
+
+AT SELECTION-SCREEN OUTPUT. "THIS IS TO HIDE PERSONNEL NUMBER WHEN WE CLICK MANAGER AS YES
+*  LOOP AT SCREEN .
+*    IF yes EQ 'X' AND screen-group1 = 'M1'.
+*      screen-active = 0.
+*
+*    ENDIF.
+*    MODIFY SCREEN.
+*
+*  ENDLOOP.
+
+READ TABLE gt_values INTO wa_values INDEX 1 .
+  CLEAR gt_values.
+  LOOP AT SCREEN.
+    IF wa_values-fieldvalue EQ ''. "MEANS NO OPTION IS SELECTED SO HIDING ALL
+      IF screen-group1 = 'M2' OR screen-group1 = 'M3' OR screen-group1 = 'M4' OR screen-group1 = 'M5'.
+        screen-active = 0. "hide
+      ENDIF.
+      MODIFY SCREEN.
+    ENDIF.
+    IF  wa_values-fieldvalue = '2' ."ONLY TO DISPLAY M2 SCREEN GROUP
+      IF screen-group1 = 'M3' OR screen-group1 = 'M4' OR screen-group1 = 'M5'.
+        screen-active = 0.
+      ENDIF.
+      MODIFY SCREEN .
+    ENDIF.
+    IF wa_values-fieldvalue = '3' .
+      IF screen-group1 = 'M2' OR screen-group1 = 'M4' OR screen-group1 = 'M5'.
+        screen-active = 0.
+      ENDIF.
+      MODIFY SCREEN.
+    ENDIF.
+    IF wa_values-fieldvalue = '1' .
+      IF screen-group1 = 'M3' OR screen-group1 = 'M2' OR screen-group1 = 'M4' OR screen-group1 = 'M5'.
+        screen-active = 0.
+      ENDIF.
+      MODIFY SCREEN.
+    ENDIF.
+    IF wa_values-fieldvalue = '4' .
+      IF screen-group1 = 'M3' OR screen-group1 = 'M2' OR screen-group1 = 'M4'.
+        screen-active = 0.
+      ENDIF.
+      MODIFY SCREEN.
+    ENDIF.
+    IF wa_values-fieldvalue = '5'
+      OR wa_values-fieldvalue = '6' OR wa_values-fieldvalue = '7'.
+      IF screen-group1 = 'M3' OR screen-group1 = 'M2' OR screen-group1 = 'M5'.
+        screen-active = 0.
+
+      ENDIF.
+      MODIFY SCREEN.
+    ENDIF.
+
+  ENDLOOP.
+
+*   FOR NOT ALLOWING TO EXECUTE MANAGER ROLES
+  SELECT SINGLE hir_level FROM ztr_org_tree INTO @DATA(hir) WHERE perner = @p_num.
+  " 1 IS MANAGER AND 4 IS CEO
+*  IF no = 'X' OR yes = 'X'.
+    IF hir eq '4'.
+
+    ELSE.
+    IF  wa_values-fieldvalue = '4' OR wa_values-fieldvalue = '5' OR
+      wa_values-fieldvalue = '6' OR wa_values-fieldvalue = '7'.
+      MESSAGE TEXT-421 TYPE 'E'."'EXECUTING NON MANAGER ROLES' TYPE 'E'.
+     endif.
+     endif.
+
+    IF hir EQ '10'.
+        IF  wa_values-fieldvalue = '1' OR wa_values-fieldvalue = '2' OR wa_values-fieldvalue = '3'.
+         MESSAGE TEXT-420 TYPE 'E'."'Higher levels cannot have access to non manager level' type 'E'.
+         ENDIF.
+  ENDIF.
+*  ENDIF.
+*  CLEAR :GT_VALUES , WA_VALUES.

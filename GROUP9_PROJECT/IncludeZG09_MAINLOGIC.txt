@@ -1,0 +1,73 @@
+*&---------------------------------------------------------------------*
+*& Include          ZG09_MAINLOGIC
+*&---------------------------------------------------------------------*
+START-OF-SELECTION.
+DATA : lv_value(20) , lv_type(20).
+  SELECT SINGLE name_first ,name_last , email  INTO ( @DATA(first_name) , @DATA(second_name) , @DATA(email) )
+           FROM ztr_org_tree WHERE perner EQ @p_num.
+  FORMAT RESET.
+
+  CASE list.
+    WHEN '1'.
+      "EMPLOYEE TIMESHEET DATA NEED TO BE OPENED.
+      INCLUDE zg09timesheet.
+    WHEN '2'.
+      CASE p_type.
+        WHEN '1'.
+          LV_value = TEXT-010."'Sick leave'.
+
+        WHEN '2'.
+          LV_value = TEXT-011."'Planned leave'.
+        WHEN '3'.
+          LV_value = TEXT-012."'Maternity leave'.
+      ENDCASE.
+      l_val = lv_value.
+      EXPORT l_val TO MEMORY ID 'ABAP03'.
+
+      PERFORM email.
+
+
+*      LEAVE TO SCREEN 0.
+
+    WHEN '3'.
+      CASE exp_tit.
+        WHEN '1'.
+          lv_value = TEXT-101."'Travel'.
+
+        WHEN '2'.
+          lv_value = TEXT-102."'Infrastructure'.
+        WHEN '3'.
+          lv_value = TEXT-103."'Internet'.
+      ENDCASE.
+      lv_type = 'ZTR_EMP_EXPENSE'.
+      PERFORM email.
+
+    WHEN '4'.
+
+      INCLUDE z09checksheet.
+
+
+    WHEN '5'.
+      EXPORT p_empno TO MEMORY ID 'ABAP27'.
+      EXPORT till_d TO MEMORY ID 'ABAP01'.
+      EXPORT from_da TO MEMORY ID 'ABAP02'.
+      EXPORT p_type TO MEMORY ID 'ABAP03'.
+
+      SUBMIT zg09_leave_request AND RETURN.
+    WHEN '6'.
+      EXPORT p_empno TO MEMORY ID 'ABAP26'.
+      SUBMIT zg09_expense_request AND RETURN.
+
+    WHEN '7'.
+      EXPORT p_empno TO MEMORY ID 'ABAP28'.
+      SUBMIT zg09_adobe AND RETURN.
+  ENDCASE.
+
+FORM email .
+  INCLUDE zdg09email.
+  CLEAR lv_value.
+ENDFORM.
+MODULE status_1404 OUTPUT.
+  SET PF-STATUS space.
+
+ENDMODULE.

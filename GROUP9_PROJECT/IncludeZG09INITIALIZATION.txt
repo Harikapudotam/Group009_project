@@ -1,0 +1,29 @@
+*&---------------------------------------------------------------------*
+*& Include          ZG09INITIALIZATION
+*&---------------------------------------------------------------------*
+INITIALIZATION.
+CLEAR : gwa_list1 , gt_list1.
+
+PERFORM set_p_type. "drop down list p_type
+
+INCLUDE zg09_set_exp_tit. "drop down list exp_status.
+
+
+
+FORM set_p_type .
+  CLEAR: gwa_values, gt_values.
+  gwa_list1-key = '1'.
+  gwa_list1-text = TEXT-408."'Sick'.
+  APPEND gwa_list1 TO gt_list1.
+  gwa_list1-key = '2'.
+  gwa_list1-text = TEXT-409."'Planned'.
+  APPEND gwa_list1 TO gt_list1.
+  gwa_list1-key = '3'.
+  gwa_list1-text = TEXT-410."'Maternity'.
+  APPEND gwa_list1 TO gt_list1.
+  CALL FUNCTION 'VRM_SET_VALUES'
+    EXPORTING
+      id     = 'P_TYPE'
+      values = gt_list1.
+  CLEAR : gwa_list1 , gt_list1.
+ENDFORM.

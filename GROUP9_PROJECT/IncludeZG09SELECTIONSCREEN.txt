@@ -1,0 +1,39 @@
+*&---------------------------------------------------------------------*
+*& Include          ZG09SELECTIONSCREEN
+*&---------------------------------------------------------------------*
+
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001. "radio buttons for manager or not
+  PARAMETERS : no  RADIOBUTTON GROUP g1 DEFAULT 'X' USER-COMMAND cmd1,
+               yes RADIOBUTTON GROUP g1 .
+SELECTION-SCREEN END OF BLOCK b1.
+
+
+SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-002. "1st drop down
+  PARAMETERS : p_num TYPE zg09_perner  MODIF ID m1 , list TYPE c AS LISTBOX
+  VISIBLE LENGTH 20 USER-COMMAND cmd1 MODIF ID NON .
+
+SELECTION-SCREEN END OF BLOCK b2 .
+
+
+
+SELECTION-SCREEN BEGIN OF BLOCK b3 WITH FRAME TITLE TEXT-003.  " leave req
+  PARAMETERS : p_type      TYPE c AS LISTBOX VISIBLE LENGTH 20 USER-COMMAND cmd2 MODIF ID m2,
+               sho_des(30) MODIF ID m2 ##needed,
+               from_da     TYPE datum MODIF ID m2,
+               till_d      TYPE datum MODIF ID m2.
+SELECTION-SCREEN END OF BLOCK b3.
+SELECTION-SCREEN BEGIN OF BLOCK b4 WITH FRAME TITLE TEXT-004.
+
+
+
+  PARAMETERS : exp_tit    TYPE c AS LISTBOX VISIBLE LENGTH 20 USER-COMMAND cmd3 MODIF ID m3,
+               le_des(30) MODIF ID m3,  "expense req
+               amount     TYPE i MODIF ID m3.
+SELECTION-SCREEN END OF BLOCK b4.
+
+
+SELECTION-SCREEN BEGIN OF BLOCK b5 WITH FRAME TITLE TEXT-005. "manager ops
+
+  PARAMETERS : p_empno TYPE zg09_perner MODIF ID m4 ,p_file TYPE rlgrap-filename MODIF ID M5.
+
+SELECTION-SCREEN END OF BLOCK b5.

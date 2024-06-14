@@ -1,0 +1,10 @@
+*&---------------------------------------------------------------------*
+*& Include          ZG09VALUE_REQUEST
+*&---------------------------------------------------------------------*
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_file. "search help to enter excel
+  CALL FUNCTION 'F4_FILENAME'
+    EXPORTING
+      program_name  = syst-cprog
+      dynpro_number = syst-dynnr
+    IMPORTING
+      file_name     = p_file.

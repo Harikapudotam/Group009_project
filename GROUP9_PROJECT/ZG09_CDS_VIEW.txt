@@ -1,0 +1,20 @@
+@AbapCatalog.sqlViewName: 'ZG09_SDQL_VIEW'
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'PARAMETERIZED CDS VIEW'
+define view ZG09_CDS_VIEW
+    with parameters REP_MAN : zg09_rep_man
+as select from ztr_e0000 as SO_A inner join ztr_org_tree as SO_B on SO_A.perner = SO_B.perner
+  inner join ztr_hr_data as SO_C on SO_B.perner = SO_C.reporting_emp
+{
+    key SO_A.perner,
+    SO_B.name_first,
+    SO_B.name_last,
+    SO_A.shift_type,
+    SO_A.shift_start_time,
+    SO_A.begda,
+    SO_A.endda,
+    SO_A.shift_end_time,
+    SO_A.avail_type
+} where SO_C.reporting_mang = $parameters.REP_MAN

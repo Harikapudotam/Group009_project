@@ -1,0 +1,64 @@
+*&---------------------------------------------------------------------*
+*& Include          ZG09SET_LIST_VALUES
+*&---------------------------------------------------------------------*
+AT SELECTION-SCREEN ON list.
+  CLEAR: gwa_values, gt_values.
+  gwa_values-fieldname = 'LIST'.
+  APPEND gwa_values TO gt_values.
+
+
+  CALL FUNCTION 'DYNP_VALUES_READ' "dynpro function to read drop down list values
+    EXPORTING
+      dyname             = sy-cprog
+      dynumb             = sy-dynnr
+      translate_to_upper = 'X'
+    TABLES
+      dynpfields         = gt_values.
+  IF NO EQ 'X'. "setting list for non manager
+      GWA_LIST-key = '1'.
+      GWA_LIST-text = TEXT-401. "edit timesheet
+      append GWA_LIST to GT_LIST.
+      GWA_LIST-key = '2'.
+      GWA_LIST-text = text-402."'Leave request'.
+      append GWA_LIST to GT_LIST.
+      GWA_LIST-key = '3'.
+      GWA_LIST-text = text-403."'expense request'.
+      append GWA_LIST to GT_LIST.
+
+  ENDIF.
+    IF YES EQ 'X'. "setting list for manager radio button
+      GWA_LIST-key = '1'.
+      GWA_LIST-text = text-401."'Edit timesheet'.
+      append GWA_LIST to GT_LIST.
+      GWA_LIST-key = '2'.
+      GWA_LIST-text = text-402."'Leave request'.
+      append GWA_LIST to GT_LIST.
+      GWA_LIST-key = '3'.
+      GWA_LIST-text = text-403."'expense request'.
+      append GWA_LIST to GT_LIST.
+
+      GWA_LIST-key = '4'.
+      GWA_LIST-text = text-404."'check employee timesheet'.
+      append GWA_LIST to GT_LIST.
+      GWA_LIST-key = '5'.
+      GWA_LIST-text = text-405."'check employee leave request'.
+      append GWA_LIST to GT_LIST.
+      GWA_LIST-key = '6'.
+      GWA_LIST-text = text-406."'check employee expense request'.
+      append GWA_LIST to GT_LIST.
+      GWA_LIST-key = '7'.
+      GWA_LIST-text = text-407."'check employee availability adobe form'.
+      append GWA_LIST to GT_LIST.
+   ENDIF.
+  CLEAR : gwa_list .
+
+*endif.
+  CALL FUNCTION 'VRM_SET_VALUES'
+    EXPORTING
+      id              = 'LIST'
+      values          = gt_list.
+*    EXCEPTIONS
+*      id_illegal_name = 1
+*      OTHERS          = 2.
+
+  CLEAR : gwa_list , gt_list.

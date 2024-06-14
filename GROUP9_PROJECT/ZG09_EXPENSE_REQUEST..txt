@@ -1,0 +1,193 @@
+*&---------------------------------------------------------------------*
+*& Report ZG09_EXPENSE_REQUEST
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZG09_EXPENSE_REQUEST.
+PARAMETERS P_EMPNO TYPE ZG09_PERNER.
+IMPORT P_EMPNO FROM MEMORY ID 'ABAP26'.
+DATA : i_container TYPE REF TO cl_gui_custom_container,
+       i_alvgrid   TYPE REF TO cl_gui_alv_grid,
+      WA_FCAT TYPE LVC_S_FCAT,
+      LT_FACT TYPE LVC_T_FCAT ,
+      LV_LAYOUT TYPE LVC_S_LAYO
+      .
+
+TYPES : BEGIN OF TY_TAB,
+  PERNER TYPE ZTR_EMP_EXPENSE-PERNER,
+APPROVER TYPE ZTR_EMP_EXPENSE-APPROVER,
+EXPENSE_TYPE TYPE ZTR_EMP_EXPENSE-EXPENSE_TYPE,
+EXPENSE_DESC TYPE ZTR_EMP_EXPENSE-EXPENSE_DESC,
+AMOUNT TYPE ZTR_EMP_EXPENSE-AMOUNT,
+EXP_STATUS TYPE ZTR_EMP_EXPENSE-EXP_STATUS,
+  END OF TY_TAB.
+DATA : IT_TAB1 TYPE TABLE OF TY_TAB .
+  wa_fcat-col_pos = '1'.
+  wa_fcat-fieldname = 'PERNER'.
+  wa_fcat-tabname = 'IT_TAB1'.
+  wa_fcat-coltext = 'EMPLOYEE_NUMBER'.
+
+  APPEND wa_fcat TO lt_fact.
+  CLEAR wa_fcat.
+
+  wa_fcat-col_pos = '2'.
+  wa_fcat-fieldname = 'APPROVER'.
+  wa_fcat-tabname = 'IT_TAB1'.
+  wa_fcat-coltext = 'APPOVER'.
+
+  APPEND wa_fcat TO lt_fact.
+  CLEAR wa_fcat.
+
+  wa_fcat-col_pos = '3'.
+  wa_fcat-fieldname = 'EXPENSE_TYPE'.
+  wa_fcat-tabname = 'IT_TAB1'.
+  wa_fcat-coltext = 'EXP_TYPE'.
+
+  APPEND wa_fcat TO lt_fact.
+  CLEAR wa_fcat.
+
+  wa_fcat-col_pos = '4'.
+  wa_fcat-fieldname = 'EXPENSE_DESC'.
+  wa_fcat-tabname = 'IT_TAB1'.
+  wa_fcat-coltext = 'EXPENSE_DESC'.
+
+  APPEND wa_fcat TO lt_fact.
+
+  CLEAR wa_fcat.
+
+  wa_fcat-col_pos = '5'.
+  wa_fcat-fieldname = 'AMOUNT'.
+  wa_fcat-tabname = 'IT_TAB1'.
+  wa_fcat-coltext = 'AMOUNT'.
+
+  APPEND wa_fcat TO lt_fact.
+
+ CLEAR wa_fcat.
+wa_fcat-col_pos = '6'.
+  wa_fcat-fieldname = 'EXP_STATUS'.
+  wa_fcat-tabname = 'IT_TAB1'.
+  wa_fcat-coltext = 'EXP_STATUS'.
+
+  APPEND wa_fcat TO lt_fact.
+
+ CLEAR wa_fcat.
+ SELECT PERNER
+APPROVER
+EXPENSE_TYPE
+EXPENSE_DESC
+AMOUNT
+EXP_STATUS FROM ZTR_EMP_EXPENSE INTO TABLE IT_TAB1 WHERE EXP_STATUS = '' and perner = p_empno.
+
+ CALL SCREEN 1404.
+*&---------------------------------------------------------------------*
+*& Module STATUS_1404 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE status_1404 OUTPUT.
+ SET PF-STATUS SPACE.
+* SET TITLEBAR 'xxx'.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_1404  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_1404 INPUT.
+
+ DATA OK_CODE TYPE SY-UCOMM.
+  CASE OK_CODE.
+    WHEN 'ACC'.
+      UPDATE ZTR_EMP_EXPENSE SET EXP_STATUS = 'ACC' , APPROVER = 'MANAGER'
+      WHERE PERNER = @P_EMPNO and EXP_STATUS = ''.
+
+      IF sy-subrc = 0.
+*        MESSAGE 'MANAGER ACCEPTED' TYPE 'S'.
+        MESSAGE  i999(>U) with TEXT-111.
+
+      ENDIF.
+    WHEN 'REJ'.
+
+        UPDATE ZTR_EMP_EXPENSE SET EXP_STATUS = 'REJT' , APPROVER = 'MANAGER'
+      WHERE PERNER = @P_EMPNO and EXP_STATUS = ''.
+      MESSAGE text-112 TYPE 'E'.
+    WHEN 'LEAVE'.
+      LEAVE TO SCREEN 0.
+    WHEN 'BACK'.
+      LEAVE TO SCREEN 0.
+*      CALL SELECTION-SCREEN 1000 .
+    WHEN 'CANCEL'.
+      LEAVE TO SCREEN 0.
+    ENDCASE.
+
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module OOALV OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE ooalv OUTPUT.
+* SET PF-STATUS 'xxxxxxxx'.
+* SET TITLEBAR 'xxx'.
+  lv_layout-zebra = 'X'.
+  lv_layout-no_toolbar = 'X'.
+  lv_layout-grid_title = text-113.
+  CREATE OBJECT i_container
+  EXPORTING
+*    parent                      =
+    container_name              = 'CNT1'
+*    style                       =
+*    lifetime                    = lifetime_default
+*    repid                       =
+*    dynnr                       =
+*    no_autodef_progid_dynnr     =
+*  EXCEPTIONS
+*    cntl_error                  = 1
+*    cntl_system_error           = 2
+*    create_error                = 3
+*    lifetime_error              = 4
+*    lifetime_dynpro_dynpro_link = 5
+*    others                      = 6
+    .
+
+
+
+CREATE OBJECT i_alvgrid
+  EXPORTING
+*    i_shellstyle      = 0
+*    i_lifetime        =
+    i_parent          = i_container
+*    i_appl_events     = SPACE
+*    i_parentdbg       =
+*    i_applogparent    =
+*    i_graphicsparent  =
+*    i_name            =
+*    i_fcat_complete   = SPACE
+*    o_previous_sral_handler =
+*    i_use_one_ux_appearance = ABAP_FALSE
+*    o_common_hub      =
+*    o_function_tool   =
+*  EXCEPTIONS
+*    error_cntl_create = 1
+*    error_cntl_init   = 2
+*    error_cntl_link   = 3
+*    error_dp_create   = 4
+*    others            = 5
+    .
+
+
+
+CALL METHOD i_alvgrid->set_table_for_first_display
+  EXPORTING
+
+     i_structure_name              = 'WA_TAB'
+     is_layout = lv_layout
+
+  CHANGING
+    it_outtab                     = IT_TAB1
+    it_fieldcatalog  = lt_fact
+.
+
+
+
+ENDMODULE.

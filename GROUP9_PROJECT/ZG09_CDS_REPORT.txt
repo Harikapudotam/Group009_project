@@ -1,0 +1,16 @@
+*&---------------------------------------------------------------------*
+*& Report ZG09_CDS_REPORT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zg09_cds_report.
+PARAMETERS p_sono TYPE zg09_rep_man.
+
+DATA(i_SALV) = cl_salv_gui_table_ida=>create_for_cds_view(
+                iv_cds_view_name      = 'Zg09_cds_view' ).
+
+i_salv->set_view_parameters( it_parameters = VALUE #( ( name = 'REP_MAN'  value = p_sono ) ) ).
+i_salv->display_options( )->set_title( iv_title = 'Employee Availability form ' ).
+i_salv->display_options( )->enable_alternating_row_pattern( )."Zebra layout
+
+i_salv->fullscreen( )->display( ).

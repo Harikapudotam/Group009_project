@@ -1,0 +1,219 @@
+*&---------------------------------------------------------------------*
+*& Report ZG09_LEAVE_REQUEST
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZG09_LEAVE_REQUEST.
+PARAMETERS : P_EMPNO TYPE ZG09_PERNER , FROM_DA TYPE DATUM , TILL_D TYPE DATUM , P_TYPE TYPE C.
+IMPORT P_EMPNO FROM MEMORY ID 'ABAP27'.
+IMPORT TILL_D FROM MEMORY ID 'ABAP01'.
+IMPORT FROM_DA FROM MEMORY ID 'ABAP02'.
+IMPORT P_TYPE FROM MEMORY ID 'ABAP03'.
+DATA : i_container TYPE REF TO cl_gui_custom_container ,
+       i_alvgrid   TYPE REF TO cl_gui_alv_grid .
+
+" I_CONTAINER TYPE REF TO CL_GUI_CUSTOM_CONTAINER ,
+ DATA:OK_CODE TYPE SY-UCOMM,
+      WA_FCAT TYPE LVC_S_FCAT ,
+      LT_FACT TYPE LVC_T_FCAT ,
+      LV_LAYOUT TYPE LVC_S_LAYO ,
+      WA_E000 TYPE ZTR_E0000 ,
+      IT_E000 TYPE TABLE OF ZTR_E0000 .
+TYPES : BEGIN OF TY_TAB,
+  PERNER TYPE ZTR_REQ_STATUS-PERNER,
+
+ENDDA TYPE ZTR_REQ_STATUS-ENDDA,
+BEGDA TYPE ZTR_REQ_STATUS-BEGDA,
+AVAIL_TYPE TYPE ZTR_REQ_STATUS-AVAIL_TYPE,
+LEAVE_STATUS TYPE ZTR_REQ_STATUS-LEAVE_STATUS,
+  END OF TY_TAB.
+DATA : IT_TAB1 TYPE TABLE OF TY_TAB .
+  wa_fcat-col_pos = '1'.
+  wa_fcat-fieldname = 'PERNER'.
+  wa_fcat-tabname = 'IT_TAB1'.
+  wa_fcat-coltext = 'EMPLOYEE_NUMBER'.
+
+  APPEND wa_fcat TO lt_fact.
+  CLEAR wa_fcat.
+
+  wa_fcat-col_pos = '2'.
+  wa_fcat-fieldname = 'ENDDA'.
+  wa_fcat-tabname = 'IT_TAB1'.
+  wa_fcat-coltext = 'END DATE'.
+
+  APPEND wa_fcat TO lt_fact.
+  CLEAR wa_fcat.
+
+  wa_fcat-col_pos = '3'.
+  wa_fcat-fieldname = 'BEGDA'.
+  wa_fcat-tabname = 'IT_TAB1'.
+  wa_fcat-coltext = 'BEGIN DATE'.
+
+  APPEND wa_fcat TO lt_fact.
+  CLEAR wa_fcat.
+
+  wa_fcat-col_pos = '4'.
+  wa_fcat-fieldname = 'AVAIL_TYPE'.
+  wa_fcat-tabname = 'IT_TAB1'.
+  wa_fcat-coltext = 'AVAIL_TYPE'.
+
+  APPEND wa_fcat TO lt_fact.
+
+  CLEAR wa_fcat.
+
+  wa_fcat-col_pos = '5'.
+  wa_fcat-fieldname = 'LEAVE_STATUS'.
+  wa_fcat-tabname = 'IT_TAB1'.
+  wa_fcat-coltext = 'LEAVE_STATUS'.
+
+  APPEND wa_fcat TO lt_fact.
+
+ CLEAR wa_fcat.
+
+ SELECT PERNER ENDDA BEGDA AVAIL_TYPE LEAVE_STATUS INTO
+   TABLE IT_TAB1 FROM ZTR_REQ_STATUS WHERE PERNER = P_EMPNO AND LEAVE_STATUS = ''.
+
+ CALL SCREEN 1404.
+*&---------------------------------------------------------------------*
+*& Module STATUS_1404 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE status_1404 OUTPUT.
+ SET PF-STATUS SPACE.
+* SET TITLEBAR 'xxx'.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_1404  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_1404 INPUT.
+
+*  DATA OK_CODE TYPE SY-UCOMM.
+  CASE OK_CODE.
+    WHEN 'ACC'.
+      IF sy-subrc = 0.
+*        MESSAGE 'MANAGER ACCEPTED' TYPE 'S'.
+        MESSAGE  i999(>U) with text-111.
+
+      ENDIF.
+      SELECT SINGLE ENDDA FROM ZTR_E0000 INTO @DATA(END) WHERE PERNER = @P_EMPNO AND AVAIL_TYPE = 'NORM_WORK' ##WARN_OK ##NEEDED.
+      UPDATE ZTR_REQ_STATUS SET LEAVE_STATUS = 'ACCE'
+      WHERE PERNER = P_EMPNO and LEAVE_STATUS = ''.
+      WA_E000-perner = P_EMPNO.
+      WA_E000-avail_type = 'HR_ABSENCE'.
+      WA_E000-begda = FROM_DA.
+      WA_E000-endda = TILL_D.
+      APPEND WA_E000 TO IT_E000.
+      INSERT INTO ZTR_E0000 VALUES WA_E000.
+      CLEAR WA_E000.
+      IF P_TYPE = '1'.
+      UPDATE ZTR_HR_LEAVE_REC SET SICK_LEAVE_BALANCE = SICK_LEAVE_BALANCE - 1 WHERE PERNER = P_EMPNO.
+
+
+      ELSEIF P_TYPE = '2'.
+      UPDATE ZTR_HR_LEAVE_REC SET VACATION_LEAVE_BALANCE = VACATION_LEAVE_BALANCE - 1
+      WHERE PERNER = P_EMPNO.
+      endif.
+      SELECT SINGLE ENDDA FROM ZTR_E0000 INTO @DATA(LV_D) WHERE AVAIL_TYPE = 'HR_ABSENCE'
+        AND PERNER = @P_EMPNO.
+      WA_E000-avail_type = 'NORM_WORK'.
+      WA_E000-perner = P_EMPNO.
+      WA_E000-shift_start_time = '080000'.
+      WA_E000-shift_end_time = '060000'.
+      WA_E000-shift_type = 'DAY1'.
+      WA_E000-begda = LV_D + 1.
+      WA_E000-endda = END.
+      INSERT INTO ZTR_E0000 VALUES WA_E000.
+      CLEAR WA_E000.
+
+    WHEN 'REJ'.
+
+      UPDATE ZTR_REQ_STATUS SET LEAVE_STATUS = 'REJE'
+      WHERE PERNER = P_EMPNO AND LEAVE_STATUS = ''.
+      MESSAGE text-113 TYPE 'E'.
+      IF sy-subrc = 0.
+*        MESSAGE 'MANAGER ACCEPTED' TYPE 'S'.
+        MESSAGE  i999(>U) with text-112.
+      ENDIF.
+    WHEN 'LEAVE'.
+      LEAVE TO SCREEN 0.
+    WHEN 'BACK'.
+      LEAVE TO SCREEN 0.
+*      CALL SELECTION-SCREEN 1000 .
+    WHEN 'CANCEL'.
+      LEAVE TO SCREEN 0.
+    ENDCASE.
+
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module OOALV OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE ooalv OUTPUT.
+* SET PF-STATUS 'xxxxxxxx'.
+* SET TITLEBAR 'xxx'.
+  lv_layout-zebra = 'X'.
+  lv_layout-no_toolbar = 'X'.
+  lv_layout-grid_title = text-114.
+  CREATE OBJECT i_container
+  EXPORTING
+*    parent                      =
+    container_name              = 'CNT1'
+*    style                       =
+*    lifetime                    = lifetime_default
+*    repid                       =
+*    dynnr                       =
+*    no_autodef_progid_dynnr     =
+*  EXCEPTIONS
+*    cntl_error                  = 1
+*    cntl_system_error           = 2
+*    create_error                = 3
+*    lifetime_error              = 4
+*    lifetime_dynpro_dynpro_link = 5
+*    others                      = 6
+    .
+
+
+
+CREATE OBJECT i_alvgrid
+  EXPORTING
+*    i_shellstyle      = 0
+*    i_lifetime        =
+    i_parent          = i_container
+*    i_appl_events     = SPACE
+*    i_parentdbg       =
+*    i_applogparent    =
+*    i_graphicsparent  =
+*    i_name            =
+*    i_fcat_complete   = SPACE
+*    o_previous_sral_handler =
+*    i_use_one_ux_appearance = ABAP_FALSE
+*    o_common_hub      =
+*    o_function_tool   =
+*  EXCEPTIONS
+*    error_cntl_create = 1
+*    error_cntl_init   = 2
+*    error_cntl_link   = 3
+*    error_dp_create   = 4
+*    others            = 5
+    .
+
+
+
+CALL METHOD i_alvgrid->set_table_for_first_display
+  EXPORTING
+
+     i_structure_name              = 'WA_TAB'
+     is_layout = lv_layout
+
+  CHANGING
+    it_outtab                     = IT_TAB1
+    it_fieldcatalog  = lt_fact
+.
+
+
+
+ENDMODULE.
